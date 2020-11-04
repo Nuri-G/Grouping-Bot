@@ -41,7 +41,7 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     }
 
-    //Stores the people to get shuffled
+    //Stores the people to get shuffled or not
     let mut people: Vec<String> = Vec::new();
 
     if all {
@@ -80,12 +80,12 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if random {
         people.shuffle(&mut thread_rng());
     }
-    publish_group(msg, ctx, &people, num_groups).await?;
+    publish_groups(msg, ctx, &people, num_groups).await?;
 
     Ok(())
 }
 
-async fn publish_group(msg: &Message, ctx: &Context, people: &Vec<String>, num_groups: u8) -> CommandResult {
+async fn publish_groups(msg: &Message, ctx: &Context, people: &Vec<String>, num_groups: u8) -> CommandResult {
 
     //Will store the groups with their index + 1 as the group name
     let mut groups: Vec<Vec<String>> = vec![vec![]; num_groups as usize];
