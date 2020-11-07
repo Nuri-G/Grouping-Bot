@@ -19,9 +19,6 @@ async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     //Checking if the user is allowed to use the bot
     let member = msg.member(&ctx).await?;
     let member_permissions = member.permissions(&ctx.cache).await?;
-    if !member_permissions.manage_roles() || !member_permissions.manage_channels() {
-        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to use this bot.\n You must be able to manage roles and manage channels.").await?;
-    }
 
 
     let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
@@ -51,6 +48,19 @@ async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
             }
         }
     }
+
+
+    //Checking if the user is allowed to use the bot
+    if !member_permissions.manage_roles() && role {
+        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to make new roles.").await?;
+        return Err(CommandError::from("Insufficient permissions for user."));
+    }
+
+    if !member_permissions.manage_channels() && channel {
+        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to make new channels.").await?;
+        return Err(CommandError::from("Insufficient permissions for user."));
+    }
+
 
     if teams.len() == 0 {
         msg.channel_id.say(&ctx.http, "Please enter at least 1 valid team name.").await?;

@@ -22,12 +22,8 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let manager = Manager::new(ctx, guild_id, msg.channel_id);
 
 
-    //Checking if the user is allowed to use the bot
     let member = msg.member(&ctx).await?;
     let member_permissions = member.permissions(&ctx.cache).await?;
-    if !member_permissions.manage_roles() || !member_permissions.manage_channels() {
-        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to use this bot.\n You must be able to manage roles and manage channels.").await?;
-    }
 
 
     //Making sure that the number of groups is between 1 and 255 inclusive
@@ -65,6 +61,17 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 return Err(CommandError::from("Invalid arguments."));
             }
         }
+    }
+
+    //Checking if the user is allowed to use the bot
+    if !member_permissions.manage_roles() && role {
+        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to make new roles.").await?;
+        return Err(CommandError::from("Insufficient permissions for user."));
+    }
+
+    if !member_permissions.manage_channels() && channel {
+        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to make new channels.").await?;
+        return Err(CommandError::from("Insufficient permissions for user."));
     }
 
     //Stores the people to get shuffled or not
