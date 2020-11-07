@@ -2,13 +2,7 @@ use std::time::Duration;
 
 use linked_hash_map::LinkedHashMap;
 use rand::{prelude::SliceRandom, thread_rng};
-use serenity::{framework::standard::CommandError, prelude::*};
-use serenity::model::prelude::*;
-
-use serenity::framework::standard::{
-    Args, CommandResult,
-    macros::command,
-};
+use serenity::{client::Context, framework::standard::{Args, CommandError, CommandResult, macros::command}, model::channel::Message, model::{Permissions, channel::{PermissionOverwrite, PermissionOverwriteType}}};
 
 use super::manager::Manager;
 
@@ -16,20 +10,12 @@ use super::manager::Manager;
 
 
 #[command]
-async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+
     let guild_id = msg.guild_id.unwrap();
     let manager = Manager::new(ctx, guild_id, msg.channel_id);
 
-    //Making sure that the number of groups is between 1 and 255 inclusive
-    let range_error = "Please enter between 1 and 255 groups.";
-    let num_groups = args.single::<u8>().unwrap_or_else(|_| {
-        0
-    });
-
-    if num_groups == 0 {
-        msg.channel_id.say(&ctx.http, range_error).await?;
-        return Err(CommandError::from(range_error));
-    }
+    let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
 
     //Setting to true if arguments are present
     //all adds all members of the discord server to the groups
@@ -49,41 +35,44 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 role = true;
             } else if arg == "-channel" {
                 channel = true;
-            } else {
+            } else if args.len() > 0 && &arg.as_str()[0..1] == "-" {
                 msg.channel_id.say(&ctx.http,format!("{} is not a valid argument.", arg)).await?;
+            } else {
+                teams.insert(arg, Vec::new());
             }
         }
     }
 
+    if teams.len() == 0 {
+        msg.channel_id.say(&ctx.http, "Please enter at least 1 valid team name.").await?;
+        return Err(CommandError::from("Not enough teams."));
+    }
+
+    let num_teams = teams.keys().len();
+    msg.channel_id.say(&ctx.http,format!("{} teams have been made.", num_teams)).await?;
+
+
     //Stores the people to get shuffled or not
     let mut people: Vec<String> = Vec::new();
-
-    let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
-
-    for i in 1..(num_groups + 1) {
-        teams.insert(format!("Team #{}", i), Vec::<String>::new());
-    }
 
     if all {
         let guild = msg.guild_id.unwrap();
         let members = guild.members(&ctx.http, None, None).await?;
-        msg.channel_id.say(&ctx.http,"-\nAdding all channel members to groups\n-").await?;
+        msg.channel_id.say(&ctx.http,"-\nAdding all channel members to teams\n-").await?;
         for member in members.iter() {
             people.push(member.user.to_string());
-            
-            println!("{}", member.display_name().to_string());
         }
     }
-
+    
     //Asking the user to input names
-    msg.channel_id.say(&ctx.http, format!("{} is making {} groups.\n\
-        Please enter the names to put in the groups or !stop to stop.\n\
-        You may enter names one at a time or as a comma separated list.", msg.author, num_groups)).await?;
+    msg.channel_id.say(&ctx.http, format!("{} is making {} teams.\n\
+        Please enter the names to put in the teams or !stop to stop.\n\
+        You may enter names one at a time or as a comma separated list.", msg.author, num_teams)).await?;
     //Taking input with up to a 10 minute delay
     let mut answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(600)).await;
 
-    // Stops the loop and outputting the groups if the user does !stop
-    // or adds more group members from user inputs
+    // Stops the loop and outputting the teams if the user does !stop
+    // or adds more team members from user inputs
     while let Some(message) = answer {
         if message.content.as_str() == "!stop" {
             answer = None;
@@ -98,11 +87,13 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     }
 
-    msg.channel_id.say(&ctx.http,"Making groups (may happen automatically after 10 minutes)...").await?;
+    msg.channel_id.say(&ctx.http,"Making teams (may happen automatically after 10 minutes)...").await?;
+    //Shuffles the order of the people before team creation.
     if random {
         people.shuffle(&mut thread_rng());
     }
-    manager.publish_teams(&mut people, &mut teams).await?;
+
+    manager.publish_teams(&people, &mut teams).await?;
 
     //Adding roles if the flag was included.
     //Needs to be after manager.publish_teams because it fills the teams up.
