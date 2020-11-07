@@ -17,7 +17,7 @@ use super::manager::Manager;
 
 #[command]
 async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let guild_id = msg.guild_id.unwrap();
+    let guild_id = msg.guild_id.expect("Failed to get guild_id from msg.");
     let manager = Manager::new(ctx, guild_id, msg.channel_id);
 
     //Making sure that the number of groups is between 1 and 255 inclusive
@@ -39,6 +39,7 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut role = false;
     let mut channel = false;
 
+    //Checking for flags
     while !args.is_empty() {
         if let Ok(arg) = args.single::<String>(){
             if arg == "-all" {
@@ -51,6 +52,7 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 channel = true;
             } else {
                 msg.channel_id.say(&ctx.http,format!("{} is not a valid argument.", arg)).await?;
+                return Err(CommandError::from("Invalid arguments."));
             }
         }
     }
@@ -64,14 +66,12 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         teams.insert(format!("Team #{}", i), Vec::<String>::new());
     }
 
+    //Adding everyone to teams if all flag is active
     if all {
-        let guild = msg.guild_id.unwrap();
-        let members = guild.members(&ctx.http, None, None).await?;
+        let members = guild_id.members(&ctx.http, None, None).await?;
         msg.channel_id.say(&ctx.http,"-\nAdding all channel members to groups\n-").await?;
         for member in members.iter() {
             people.push(member.user.to_string());
-            
-            println!("{}", member.display_name().to_string());
         }
     }
 
@@ -99,12 +99,15 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     }
 
     msg.channel_id.say(&ctx.http,"Making groups (may happen automatically after 10 minutes)...").await?;
+    //Shuffles the order of the people before team creation.
     if random {
         people.shuffle(&mut thread_rng());
     }
+    
     manager.publish_teams(&mut people, &mut teams).await?;
 
-    //Adding roles if the flag was included.
+    //Adding roles and channels if the flag was included.
+    //If both role and channel flags are included, channels are exclusive to the role.
     //Needs to be after manager.publish_teams because it fills the teams up.
     if role {
         for (name, team) in teams.iter() {

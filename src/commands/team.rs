@@ -12,7 +12,7 @@ use super::manager::Manager;
 #[command]
 async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
-    let guild_id = msg.guild_id.unwrap();
+    let guild_id = msg.guild_id.expect("Failed to get guild_id from msg");
     let manager = Manager::new(ctx, guild_id, msg.channel_id);
 
     let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
@@ -56,8 +56,7 @@ async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut people: Vec<String> = Vec::new();
 
     if all {
-        let guild = msg.guild_id.unwrap();
-        let members = guild.members(&ctx.http, None, None).await?;
+        let members = guild_id.members(&ctx.http, None, None).await?;
         msg.channel_id.say(&ctx.http,"-\nAdding all channel members to teams\n-").await?;
         for member in members.iter() {
             people.push(member.user.to_string());
@@ -95,7 +94,8 @@ async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     manager.publish_teams(&people, &mut teams).await?;
 
-    //Adding roles if the flag was included.
+    //Adding roles and channels if the flag was included.
+    //If both role and channel flags are included, channels are exclusive to the role.
     //Needs to be after manager.publish_teams because it fills the teams up.
     if role {
         for (name, team) in teams.iter() {

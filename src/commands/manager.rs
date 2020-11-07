@@ -60,7 +60,7 @@ impl<'a> Manager<'a> {
         let num_teams = team_keys.len();
     
         for person in people.iter() {
-            teams.get_mut(&team_keys[index]).unwrap().push(person.to_owned());
+            teams.get_mut(&team_keys[index]).expect("Failed to get team from key").push(person.to_owned());
             index += 1;
             if index == num_teams as usize {
                 index = 0;
