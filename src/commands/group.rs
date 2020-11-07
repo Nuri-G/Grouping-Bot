@@ -17,8 +17,18 @@ use super::manager::Manager;
 
 #[command]
 async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+
     let guild_id = msg.guild_id.expect("Failed to get guild_id from msg.");
     let manager = Manager::new(ctx, guild_id, msg.channel_id);
+
+
+    //Checking if the user is allowed to use the bot
+    let member = msg.member(&ctx).await?;
+    let member_permissions = member.permissions(&ctx.cache).await?;
+    if !member_permissions.manage_roles() || !member_permissions.manage_channels() {
+        msg.channel_id.say(&ctx.http,"You do not have sufficient permissions to use this bot.\n You must be able to manage roles and manage channels.").await?;
+    }
+
 
     //Making sure that the number of groups is between 1 and 255 inclusive
     let range_error = "Please enter between 1 and 255 groups.";
