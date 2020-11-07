@@ -1,6 +1,6 @@
-use std::env;
+use std::{collections::HashSet, env};
 
-use serenity::{async_trait, framework::{StandardFramework, standard::macros::group}, model::{gateway::Ready}, prelude::*};
+use serenity::{async_trait, framework::{StandardFramework, standard::{Args, CommandGroup, CommandResult, HelpOptions, help_commands, macros::{group, help}}}, model::{channel::Message, gateway::Ready, id::UserId}, prelude::*};
 
 mod commands;
 
@@ -18,6 +18,19 @@ impl EventHandler for Handler {
     }
 }
 
+#[help]
+async fn my_help(
+   context: &Context,
+   msg: &Message,
+   args: Args,
+   help_options: &'static HelpOptions,
+   groups: &[&'static CommandGroup],
+   owners: HashSet<UserId>
+) -> CommandResult {
+    let _ = help_commands::plain(context, msg, args, help_options, groups, owners).await;
+    Ok(())
+}
+
 #[group]
 #[commands(group, team)]
 struct General;
@@ -27,7 +40,8 @@ async fn main() {
     // framework sets ! to be the command prefix and sets General as the command gorup.
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
-        .group(&GENERAL_GROUP);
+        .group(&GENERAL_GROUP)
+        .help(&MY_HELP);
 
     // Sets the token to the DISCORD_TOKEN environment variable.
     let token = env::var("DISCORD_TOKEN")

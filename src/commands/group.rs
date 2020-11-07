@@ -16,6 +16,11 @@ use super::manager::Manager;
 
 
 #[command]
+#[description = "Makes numbered groups of people.\n\
+    You must use !stop to stop adding people to groups.\n\
+    The following example adds everyone in the discord server to 10 randomly assigned groups, makes a role for each group, and makes a channel only for that role."]
+#[example = "10 -random -all -channel -role\n\
+    !stop"]
 async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     let guild_id = msg.guild_id.expect("Failed to get guild_id from msg.");
