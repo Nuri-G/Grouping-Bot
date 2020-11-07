@@ -4,7 +4,10 @@ use serenity::{async_trait, framework::{StandardFramework, standard::macros::gro
 
 mod commands;
 
-use commands::group::*;
+use commands::{
+    group::*,
+    team::*,
+};
 struct Handler;
 
 #[async_trait]
@@ -16,7 +19,7 @@ impl EventHandler for Handler {
 }
 
 #[group]
-#[commands(group)]
+#[commands(group, team)]
 struct General;
 
 #[tokio::main]
