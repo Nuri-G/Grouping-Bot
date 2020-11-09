@@ -14,8 +14,9 @@ use super::manager::Manager;
     \n\
     You must use `!stop` to stop adding people to teams.\n\
     \n\
-    The following example adds everyone in the discord server to randomly assigned teams, makes a role for each team, and makes a channel only for that role.\n"]
-#[example = "team1 team2 team3 team4 -random -all -channel -role"]
+    The following example adds everyone in the discord server to randomly assigned teams, makes a role for each team, and makes a channel only for that role.\n
+    \n\
+    **Sample usage:** `!team team1 team2 team3 team4 -random -all -channel -role`"]
 async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     let guild_id = msg.guild_id.expect("Failed to get guild_id from msg");
