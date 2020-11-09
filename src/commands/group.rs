@@ -20,7 +20,7 @@ use super::manager::Manager;
     \n\
     You must use `!stop` to stop adding people to groups.\n\
     \n\
-    To make groups of a size add the -size argument, and the number of groups will be automatically generated based on the number you entered as the first argument.
+    To make groups of a size add the `-size` argument, and the number of groups will be automatically generated based on the number you entered as the first argument.
     \n\
     The following example adds everyone in the discord server to 10 randomly assigned groups, makes a role for each group, and makes a channel only for that role.\n
     \n\
