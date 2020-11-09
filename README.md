@@ -1,6 +1,6 @@
 # Grouping-Bot
 
-Grouping-Bot is a Discord bot written in Rust designed to facilitate making groups and teams out of the members in a Discord server or other people.
+Grouping-Bot is a Discord bot written in Rust using [serenity](https://docs.rs/serenity/0.9.1/serenity/) designed to facilitate making groups and teams out of the members in a Discord server or other people.
 
 ## Running the Bot
 To run the bot make sure to set up a bot in the Discord Developer Portal and set the environment variable "DISCORD_TOKEN" to your token. Add the bot to your server and build the source with cargo and you should be good to go.
