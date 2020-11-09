@@ -13,7 +13,7 @@ Commands for this bot follow the structure `!<command> [arguments]`.
 |---------|-------------|
 | `!group [1-255] [arguments]` | Makes 1-255 groups from the names provided in following responses. |
 | `!team [TeamName1] [TeamName2]... [TeamNameN] [arguments]` | Makes any number of teams based on the teams names passed as arguments. Members will then be added in following inputs. Arguments can be placed in between or before team names. |
-| `!help` | Displays usage instructions. |
+| `!help [command]` | Displays usage instructions. |
 
 | Argument | Command(s) | Description
 |---------|-------------|------------|

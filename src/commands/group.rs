@@ -17,10 +17,13 @@ use super::manager::Manager;
 
 #[command]
 #[description = "Makes numbered groups of people.\n\
+    \n\
     You must use !stop to stop adding people to groups.\n\
-    The following example adds everyone in the discord server to 10 randomly assigned groups, makes a role for each group, and makes a channel only for that role."]
-#[example = "10 -random -all -channel -role\n\
-    !stop"]
+    \n\
+    To make groups of a size add the -size argument, and the number of groups will be automatically generated based on the number you entered as the first argument.
+    \n\
+    The following example adds everyone in the discord server to 10 randomly assigned groups, makes a role for each group, and makes a channel only for that role.\n"]
+#[example = "10 -random -all -channel -role"]
 async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
     let guild_id = msg.guild_id.expect("Failed to get guild_id from msg.");
@@ -32,7 +35,7 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
 
     //Making sure that the number of groups is between 1 and 255 inclusive
-    let range_error = "Please enter between 1 and 255 groups.";
+    let range_error = "Please enter a number between 1 and 255.";
     let num_groups = args.single::<u8>().unwrap_or_else(|_| {
         0
     });
