@@ -7,7 +7,7 @@ To run the bot make sure to set up a bot in the Discord Developer Portal and set
 
 ## Usage
 
-Commands for this bot follow the structure '!<command> [arguments]'.
+Commands for this bot follow the structure `!<command> [arguments]`.
 
 | Command | Description
 | `!group 5` | Makes 5 groups from the names provided in following responses. |
