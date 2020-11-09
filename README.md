@@ -11,6 +11,14 @@ Commands for this bot follow the structure `!<command> [arguments]`.
 
 | Command | Description
 |---------|-------------|
-| `!group 5` | Makes 5 groups from the names provided in following responses. |
+| `!group [1-255]` | Makes 1-255 groups from the names provided in following responses. |
 | `!team [TeamName1] [TeamName2]... [TeamNameN]` | Makes any number of teams based on the teams names passed as arguments. Members will then be added in following inputs. |
 | `!help` | Displays usage instructions. |
+
+| Argument | Command(s) | Description
+|---------|-------------|------------|
+| `-random` | `!group`, `!team` | Randomizes group/team assignments. |
+| `-role` | `!group`, `!team` | Makes a Discord role for the group/team. |
+| `-channel` | `!group`, `!team` | Makes a Discord channel for the group/team. If the role argument is also given, channels will be locked to the group/team's role. |
+| `-all` | `!group`, `!team` | Adds all server members to the groups/teams being made. |
+| `-size` | `!group` | Changes the number passed to the !group command to mean the number of people per team rather than the number of teams. Will put extra people on teams rather than having teams with too few people. |
