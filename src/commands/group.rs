@@ -49,6 +49,7 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut random = false;
     let mut role = false;
     let mut channel = false;
+    let mut size = false;
 
     //Checking for flags
     while !args.is_empty() {
@@ -61,6 +62,8 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 role = true;
             } else if arg == "-channel" {
                 channel = true;
+            } else if arg == "-size" {
+                size = true;
             } else {
                 msg.channel_id.say(&ctx.http,format!("{} is not a valid argument.", arg)).await?;
                 return Err(CommandError::from("Invalid arguments."));
@@ -82,12 +85,6 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     //Stores the people to get shuffled or not
     let mut people: Vec<String> = Vec::new();
 
-    let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
-
-    for i in 1..(num_groups + 1) {
-        teams.insert(format!("Team #{}", i), Vec::<String>::new());
-    }
-
     //Adding everyone to teams if all flag is active
     if all {
         let members = guild_id.members(&ctx.http, None, None).await?;
@@ -97,10 +94,18 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     }
 
-    //Asking the user to input names
-    msg.channel_id.say(&ctx.http, format!("{} is making {} groups.\n\
+    if size {
+        //Asking the user to input names when the size argument was used
+        msg.channel_id.say(&ctx.http, format!("{} is making groups of {} people each.\n\
         Please enter the names to put in the groups or !stop to stop.\n\
         You may enter names one at a time or as a comma separated list.", msg.author, num_groups)).await?;
+    } else {
+        //Asking the user to input names when the size argument was not used
+        msg.channel_id.say(&ctx.http, format!("{} is making {} groups.\n\
+        Please enter the names to put in the groups or !stop to stop.\n\
+        You may enter names one at a time or as a comma separated list.", msg.author, num_groups)).await?;
+    }
+
     //Taking input with up to a 10 minute delay
     let mut answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(600)).await;
 
@@ -124,6 +129,18 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     //Shuffles the order of the people before team creation.
     if random {
         people.shuffle(&mut thread_rng());
+    }
+
+    let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
+
+    if size {
+        for i in 1..(people.len() / num_groups as usize + 1) {
+            teams.insert(format!("Team #{}", i), Vec::<String>::new());
+        }
+    } else {
+        for i in 1..(num_groups + 1) {
+            teams.insert(format!("Team #{}", i), Vec::<String>::new());
+        }
     }
     
     manager.publish_teams(&mut people, &mut teams).await?;
