@@ -18,7 +18,7 @@ use super::manager::Manager;
 #[command]
 #[description = "Makes numbered groups of people.\n\
     \n\
-    You must use !stop to stop adding people to groups.\n\
+    You must use `!stop` to stop adding people to groups.\n\
     \n\
     To make groups of a size add the -size argument, and the number of groups will be automatically generated based on the number you entered as the first argument.
     \n\
@@ -100,19 +100,19 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if size {
         //Asking the user to input names when the size argument was used
         msg.channel_id.say(&ctx.http, format!("{} is making groups of {} people each.\n\
-        Please enter the names to put in the groups or !stop to stop.\n\
+        Please enter the names to put in the groups or `!stop` to stop.\n\
         You may enter names one at a time or as a comma separated list.", msg.author, num_groups)).await?;
     } else {
         //Asking the user to input names when the size argument was not used
         msg.channel_id.say(&ctx.http, format!("{} is making {} groups.\n\
-        Please enter the names to put in the groups or !stop to stop.\n\
+        Please enter the names to put in the groups or `!stop` to stop.\n\
         You may enter names one at a time or as a comma separated list.", msg.author, num_groups)).await?;
     }
 
     //Taking input with up to a 10 minute delay
     let mut answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(600)).await;
 
-    // Stops the loop and outputting the groups if the user does !stop
+    // Stops the loop and outputting the groups if the user does `!stop`
     // or adds more group members from user inputs
     while let Some(message) = answer {
         if message.content.as_str() == "!stop" {

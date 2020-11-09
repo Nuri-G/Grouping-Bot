@@ -12,7 +12,7 @@ use super::manager::Manager;
 #[command]
 #[description = "Makes named teams of people.\n\
     \n\
-    You must use !stop to stop adding people to teams.\n\
+    You must use `!stop` to stop adding people to teams.\n\
     \n\
     The following example adds everyone in the discord server to randomly assigned teams, makes a role for each team, and makes a channel only for that role.\n"]
 #[example = "team1 team2 team3 team4 -random -all -channel -role"]
@@ -90,12 +90,12 @@ async fn team(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     
     //Asking the user to input names
     msg.channel_id.say(&ctx.http, format!("{} is making {} teams.\n\
-        Please enter the names to put in the teams or !stop to stop.\n\
+        Please enter the names to put in the teams or `!stop` to stop.\n\
         You may enter names one at a time or as a comma separated list.", msg.author, num_teams)).await?;
     //Taking input with up to a 10 minute delay
     let mut answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(600)).await;
 
-    // Stops the loop and outputting the teams if the user does !stop
+    // Stops the loop and outputting the teams if the user does `!stop`
     // or adds more team members from user inputs
     while let Some(message) = answer {
         if message.content.as_str() == "!stop" {

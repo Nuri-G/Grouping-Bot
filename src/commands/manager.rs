@@ -3,6 +3,7 @@
 use linked_hash_map::LinkedHashMap;
 use serenity::{Error, client::Context, model::{channel::{GuildChannel, PermissionOverwrite}, guild::Role, id::{ChannelId, GuildId}}};
 
+// A manager should make interacting with a discord server easier.
 pub struct Manager<'a> {
     ctx: &'a Context,
     guild_id: GuildId,
@@ -10,6 +11,10 @@ pub struct Manager<'a> {
 }
 
 impl<'a> Manager<'a> {
+    // Constructor to make a new manager
+    // ctx - The serenity Context to use
+    // guild_id - The serenity GuildId that should be interacted with
+    // channel_id - The serenity ChannelId that should be interacted with
     pub fn new(ctx: &'a Context, guild_id: GuildId, channel_id: ChannelId) -> Self {
         Manager {
             ctx,
@@ -18,6 +23,8 @@ impl<'a> Manager<'a> {
         }
     }
 
+    // Adds a new role 'name' and assigns it to all the user values in people if they are in the server.
+    // Works for both regular user names and user id strings.
     pub async fn add_role(&self, name: &String, people: &Vec<String>) -> Result<Role, Error> {
         let role = self.guild_id.create_role(&self.ctx.http, |r| r
             .mentionable(true)
@@ -31,6 +38,8 @@ impl<'a> Manager<'a> {
         Ok(role)
     }
 
+    // Adds a new channel 'name' and adds all the users in people if they are in the server.
+    // Works for both regular user names and user id strings.
     pub async fn add_channel(&self, name: &String, permissions: Option<Vec<&PermissionOverwrite>>) -> Result<GuildChannel, Error> {
         let channel = self.guild_id.create_channel(&self.ctx.http, |c| c
             .name(name)).await;
@@ -50,6 +59,9 @@ impl<'a> Manager<'a> {
         channel
     }
 
+    // Takes in people and teams, and assigns all the people to teams and prints the result to the server.
+    // Modifies the teams LinkedHashMap so that it contains all the people in people.
+    // teams must already contain the team names to be assigned to.
     pub async fn publish_teams(&self, people: &Vec<String>, teams: &mut LinkedHashMap<String, Vec<String>>) -> Result<(), Error> {
 
 
