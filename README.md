@@ -10,6 +10,7 @@ To run the bot make sure to set up a bot in the Discord Developer Portal and set
 Commands for this bot follow the structure `!<command> [arguments]`.
 
 | Command | Description
+|---------|-------------|
 | `!group 5` | Makes 5 groups from the names provided in following responses. |
 | `!team [TeamName1] [TeamName2]... [TeamNameN]` | Makes any number of teams based on the teams names passed as arguments. Members will then be added in following inputs. |
 | `!help` | Displays usage instructions. |
