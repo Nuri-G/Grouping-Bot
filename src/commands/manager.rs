@@ -70,7 +70,7 @@ impl<'a> Manager<'a> {
         let mut output = String::from("");
         //Adding the grouped people to the output
         for (team_name, team) in teams.iter() {
-            output.push_str(format!("Team {}", team_name).as_str());
+            output.push_str(format!("{}:", team_name).as_str());
             output.push('\n');
             for name in team.iter() {
                 output.push_str("    ");

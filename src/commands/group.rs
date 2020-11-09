@@ -134,12 +134,13 @@ async fn group(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut teams: LinkedHashMap<String, Vec<String>> = LinkedHashMap::new();
 
     if size {
-        for i in 1..(people.len() / num_groups as usize + 1) {
-            teams.insert(format!("Team #{}", i), Vec::<String>::new());
+        let num = if people.len() < num_groups as usize { 2 } else { people.len() / num_groups as usize + 1 };
+        for i in 1..num {
+            teams.insert(format!("Group #{}", i), Vec::<String>::new());
         }
     } else {
         for i in 1..(num_groups + 1) {
-            teams.insert(format!("Team #{}", i), Vec::<String>::new());
+            teams.insert(format!("Group #{}", i), Vec::<String>::new());
         }
     }
     
