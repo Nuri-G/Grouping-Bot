@@ -180,15 +180,21 @@ fn fill_tournament(round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, round_nu
     let round_num = round_num + 1;
     let mut next_round: LinkedHashMap<String, Arc<Mutex<Game>>> = LinkedHashMap::new();
     let mut current_game;
-    if round.len() > 1 {
+    let len = round.len();
+    if len > 1 {
         for (index, (_, game)) in round.iter_mut().enumerate() {
-            if index % 2 == 0  {
+            if index % 2 == 0 && index + 1 != len {
                 current_game = Arc::new(Mutex::new(Game::new(format!("{}-{}", round_num, index / 2 + 1), "".to_owned(), "".to_owned(), None)));
                 all_games.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
                 next_round.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
+            } else if index % 2 == 0 {
+                let id = game.as_ref().lock().unwrap().id.clone();
+                next_round.insert(id, Arc::clone(game));
             }
-            let mut guard = game.lock().expect("There was an unknown error.");
-            guard.set_next(Some(Arc::clone(&next_round[&format!("{}-{}", round_num, index / 2 + 1)])));
+            if index + 1 != len {
+                let mut guard = game.lock().expect("There was an unknown error.");
+                guard.set_next(Some(Arc::clone(&next_round[&format!("{}-{}", round_num, index / 2 + 1)])));
+            }
         }
         fill_tournament(&mut next_round, round_num, all_games);
     }
