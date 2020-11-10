@@ -7,6 +7,7 @@ mod commands;
 use commands::{
     group::*,
     team::*,
+    tournament::*,
 };
 struct Handler;
 
@@ -32,7 +33,7 @@ async fn my_help(
 }
 
 #[group]
-#[commands(group, team)]
+#[commands(group, team, tournament)]
 struct General;
 
 #[tokio::main]
