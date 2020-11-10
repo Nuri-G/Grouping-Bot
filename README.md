@@ -1,6 +1,6 @@
 # Grouping-Bot
 
-Grouping-Bot is a Discord bot written in Rust designed to facilitate making groups, teams, and tournaments out of the members in a Discord server or other people. It uses [serenity](https://docs.rs/serenity/0.9.1/serenity/) to interact with the Discord API. Commands are one file each and rely on the Manager struct and implementation in manager.rs to manage the server's roles and channels. The tournament command also uses the Game struct in game.rs to build the tournament's data structure.
+Grouping-Bot is a Discord bot written in Rust designed to facilitate making groups, teams, and tournaments out of the members in a Discord server or other people. It uses [serenity](https://docs.rs/serenity/0.9.1/serenity/) to interact with the Discord API. Commands are one file each and rely on the Manager struct and implementation in manager.rs to manage the server's roles and channels. The tournament command also uses the Game struct in game.rs to build the tournament's data structure. The bot linked below is hosted on Heroku.
 
 ## Running the Bot
 
