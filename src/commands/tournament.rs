@@ -203,9 +203,10 @@ fn fill_tournament(round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, round_nu
             let keys: Vec<String> = round.keys().map(|s| s.to_owned() ).collect();
             let game = Arc::clone(&round[&keys[round.len() - 1]]);
             let mut g = game.as_ref().lock().unwrap();
-            let id = g.id.clone();
+            let mut id = g.id.clone();
             round.remove(&id);
             g.id = format!("{}-{}", round_num, keys.len() / 2);
+            id = g.id.clone();
             drop(g);
             round.insert(id, game);
         }
