@@ -188,7 +188,7 @@ fn fill_tournament(round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, round_nu
                 current_game = Arc::new(Mutex::new(Game::new(format!("{}-{}", round_num, index / 2 + 1), "".to_owned(), "".to_owned(), None)));
                 all_games.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
                 next_round.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
-            } else if index % 2 == 1 {
+            } else if index % 2 == 0 {
                 extra_person = true;
                 let g = game.as_ref().lock().unwrap();
                 let id = g.id.clone();
