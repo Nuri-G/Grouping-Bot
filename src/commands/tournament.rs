@@ -14,6 +14,8 @@ use super::game::Game;
     \n\
     The following example starts a single elimination tournament with 4 named teams.\n
     \n\
+    **You will need to advance rounds with only one participant.**
+    \n\
     **Sample usage:** `!tournament team1 team2 team3 team4`"]
 async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
@@ -78,8 +80,10 @@ async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
             guard.add_team(team_name.to_owned()).expect("Teams already filled.");
         }
     }
-
+    
+    
     fill_tournament(&mut tournament, 1, &mut all_games);
+    // trim_tournament(&mut tournament, &mut all_games);
     
     let mut out: String = String::new();
     for key in tournament.keys() {
@@ -103,12 +107,13 @@ async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
     If you want to end the tournament use `!stop`.").await?;
     //Taking input with up to a 100 minute delay
     let mut answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(6000)).await;
-
+    let mut stop = false;
     // Stops the loop and outputting the teams if the user does `!stop`
     // or keeps updating tournament stats untill there is a winner.
     while let Some(message) = answer {
         let text = message.content.as_str();
         if text == "!stop" {
+            msg.channel_id.say(&ctx.http,"Tournament has been ended.").await?;
             answer = None;
         } else if text.starts_with("!declare") {
             let split: Vec<String> = text.split(" ").map(|s: &str| s.to_string()).collect();
@@ -132,6 +137,7 @@ async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
                                     }
                                 }
                                 None => {
+                                    stop = true;
                                     has_team = true;
                                     next_id = "won the tournament!".to_string();
                                 }
@@ -166,7 +172,11 @@ async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
             } else {
                 msg.channel_id.say(&ctx.http,"You should use the format `!declare [round #]-[game #] [winner's name]`").await?;
             }
-            answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(6000)).await;
+            if stop {
+                answer = None
+            } else {
+                answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(6000)).await;
+            }
         } else {
             answer = msg.author.await_reply(&ctx).timeout(Duration::from_secs(6000)).await;
         }
@@ -176,40 +186,56 @@ async fn tournament(ctx: &Context, msg: &Message, mut args: Args) -> CommandResu
 }
 
 //Fills up all the tournament games with their next games.
-fn fill_tournament(round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, round_num: u32, all_games: &mut LinkedHashMap<String, Arc<Mutex<Game>>>) {
+fn fill_tournament(current_round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, round_num: u32, all_games: &mut LinkedHashMap<String, Arc<Mutex<Game>>>) {
     let round_num = round_num + 1;
     let mut next_round: LinkedHashMap<String, Arc<Mutex<Game>>> = LinkedHashMap::new();
-    let mut current_game;
-    let len = round.len();
-    let mut extra_person = false;
+    let len = current_round.len();
     if len > 1 {
-        for (index, (_, game)) in round.iter_mut().enumerate() {
-            if index % 2 == 0 && index + 1 != len {
-                current_game = Arc::new(Mutex::new(Game::new(format!("{}-{}", round_num, index / 2 + 1), "".to_owned(), "".to_owned(), None)));
-                all_games.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
-                next_round.insert(format!("{}-{}", round_num, index / 2 + 1), Arc::clone(&current_game));
-            } else if index % 2 == 0 {
-                extra_person = true;
-                let g = game.as_ref().lock().unwrap();
-                let id = g.id.clone();
-                next_round.insert(id, Arc::clone(game));
+        for (index, (_, game)) in current_round.iter_mut().enumerate() {
+            let next_id = format!("{}-{}", round_num, index / 2 + 1);
+
+            if index % 2 == 0 {
+                let next_game = Arc::new(Mutex::new(Game::new(next_id.clone(), "".to_owned(), "".to_owned(), None)));
+                all_games.insert(next_id.clone(), Arc::clone(&next_game));
+                next_round.insert(next_id.clone(), Arc::clone(&next_game));
             }
-            if index + 1 != len {
-                let mut guard = game.lock().expect("There was an unknown error.");
-                guard.set_next(Some(Arc::clone(&next_round[&format!("{}-{}", round_num, index / 2 + 1)])));
-            }
-        }
-        if extra_person {
-            let keys: Vec<String> = round.keys().map(|s| s.to_owned() ).collect();
-            let game = Arc::clone(&round[&keys[round.len() - 1]]);
-            let mut g = game.as_ref().lock().unwrap();
-            let mut id = g.id.clone();
-            round.remove(&id);
-            g.id = format!("{}-{}", round_num, keys.len() / 2);
-            id = g.id.clone();
-            drop(g);
-            round.insert(id, game);
+            game.lock().unwrap().set_next(Some(Arc::clone(&next_round[&format!("{}-{}", round_num, index / 2 + 1)])));
         }
         fill_tournament(&mut next_round, round_num, all_games);
     }
 }
+
+// //Gets rid of games that will only have 1 team in them.
+// fn trim_tournament(round: &mut LinkedHashMap<String, Arc<Mutex<Game>>>, all_games: &mut LinkedHashMap<String, Arc<Mutex<Game>>>) {
+//     let mut next_round: LinkedHashMap<String, Arc<Mutex<Game>>> = LinkedHashMap::new();
+//     if round.len() > 2 && round.len() % 2 == 1 {
+//         let keys: Vec<String> = round.keys().map(|k| k.to_string()).collect();
+//         let size = keys.len() as u32;
+//         let log2size = 32 - (size - 1).leading_zeros() - 1;
+//         let game_arc = Arc::clone(&round.get(&keys[keys.len() - 1]).unwrap());
+//         let game = game_arc.lock().unwrap();
+//         let next = Arc::clone(game.next_game.as_ref().unwrap());
+//         let next_id = g.next_game.as_ref().unwrap().lock().unwrap().id.clone();
+//         next.as_ref().lock().unwrap().id = next_id.clone();
+//         // round.remove(&keys[keys.len() - 1]);
+//         // round.insert(next_id.clone(), next);
+//         // keys.remove(keys.len() - 1);
+//         // keys.push(next_id.clone());
+//         for key in keys.iter() {
+//             next_round.insert(t.next_game.as_ref().unwrap().lock().unwrap().id.clone(), Arc::clone(t.next_game.as_ref().unwrap()));
+//         }
+//         trim_tournament(&mut next_round, all_games);
+//     } else if round.len() == 2 {
+//         let keys: Vec<String> = round.keys().map(|s| s.to_string()).collect();
+//         let id = keys[1].clone();
+//         let game_arc = Arc::clone(round.get(&id).unwrap());
+//         let mut game = game_arc.as_ref().lock().unwrap();
+//         let top = game.top_team.clone();
+//         let bottom = game.bottom_team.clone();
+//         let next_id = game.next_game.as_ref().unwrap().lock().unwrap().id.clone();
+//         if top != "" && bottom == "" {
+//             round.remove(&id);
+//             round.insert(next_id.clone(), Arc::clone(game.next_game.as_mut().unwrap()));
+//         }
+//     }
+// }
